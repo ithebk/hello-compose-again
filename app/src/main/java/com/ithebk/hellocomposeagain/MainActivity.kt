@@ -13,38 +13,39 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.ithebk.hellocomposeagain.ui.theme.HelloComposeAgainTheme
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            var clicks  = remember{ mutableStateOf(0)};
-            NewStory()
-            ClickCounter(clicks = clicks.value, onClick = {
-                clicks.value +=1;
-                println(clicks);
-            })
-            println(square(2));
-//            ClickCounter(clicks.value) {
-//                clicks.value += 1
-//                println(clicks)
-//            }
-        }
+        println(square(2))
+            setContent {
+                val clicks = remember {mutableStateOf(0)}
+                MyApp {
+                    Column() {
+                        NewStory()
+                        MyScreenContent()
+                        Counter(count = clicks.value, updateCount = { clicks.value++})
+                    }
+                }
+            }
+
     }
 }
 
 val square : (Int) -> Int =  { data -> data*data}
 
+//state hoisting
 @Composable
-fun ClickCounter(clicks: Int, onClick: () -> Unit) {
-    println("ClickCounter Called:");
-    Button(onClick = onClick) {
-        Text("I've been clicked $clicks times")
+fun Counter(count: Int, updateCount: () -> Unit) {
+    Button(onClick = updateCount) {
+        Text(text = "You have been clicked $count times")
     }
 }
 
@@ -53,7 +54,7 @@ fun NewStory() {
     Column(
         modifier = Modifier.padding(16.dp)
     ) {
-        var checked = remember{ mutableStateOf(false)};
+        val checked = remember{ mutableStateOf(false)}
         Image(
             painter = painterResource(id = R.drawable.header),
             contentDescription = "Header",
@@ -67,7 +68,7 @@ fun NewStory() {
         Checkbox(checked = checked.value, onCheckedChange = {check -> checked.value=check})
         Spacer(Modifier.height(16.dp))
         Text(
-            "A day wandering through the sandhills " +
+            "A day wandering through the sand hills " +
                     "in Shark Fin Cove, and a few of the " +
                     "sights I saw",
             style = typography.h6,
@@ -75,14 +76,45 @@ fun NewStory() {
             overflow = TextOverflow.Ellipsis)
         Text("Davenport, California",
         style= typography.body2)
-        Text("December 2018",
-            style= typography.body2)
+        Text("December",
+            style= typography.body2,
+            modifier = Modifier.padding(top=16.dp))
+
     }
 
+}
+
+@Composable
+fun MyApp(content: @Composable () -> Unit) {
+    HelloComposeAgainTheme() {
+        Surface(color = Color.Yellow) {
+            content()
+        }
+    }
+}
+
+@Composable
+fun MyScreenContent(names : List<String> = listOf("Hello", "Compose", "How are you")) {
+    Column {
+        for (name in names) {
+            Greeting(name)
+            Divider(color = Color.Black)
+        }
+    }
+}
+
+@Composable
+fun Greeting(value:String) {
+    Text(text = value);
 }
 
 @Preview
 @Composable
 fun PreviewGreeting() {
-    NewStory()
+    MyApp {
+        Column() {
+            NewStory()
+            MyScreenContent()
+        }
+    }
 }
